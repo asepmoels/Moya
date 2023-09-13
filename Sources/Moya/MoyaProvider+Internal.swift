@@ -184,8 +184,12 @@ private extension MoyaProvider {
             return uploadRequest
         }
 
-        let validationCodes = target.validationType.statusCodes
-        let validatedRequest = validationCodes.isEmpty ? uploadRequest : uploadRequest.validate(statusCode: validationCodes)
+        let isValidationEmpty = self.validation == nil
+        let validatedRequest = isValidationEmpty ? uploadRequest : uploadRequest.validate({ [weak self] request, response, data in
+            guard let self = self, let validationBlock = self.validation else { return .success(()) }
+            return validationBlock((request: request, response: response, data: data, fileURL: nil))
+        })
+        
         return sendAlamofireRequest(validatedRequest, target: target, callbackQueue: callbackQueue, progress: progress, completion: completion)
     }
 
@@ -198,8 +202,12 @@ private extension MoyaProvider {
             return uploadRequest
         }
 
-        let validationCodes = target.validationType.statusCodes
-        let alamoRequest = validationCodes.isEmpty ? uploadRequest : uploadRequest.validate(statusCode: validationCodes)
+        let isValidationEmpty = self.validation == nil
+        let alamoRequest = isValidationEmpty ? uploadRequest : uploadRequest.validate({ [weak self] request, response, data in
+            guard let self = self, let validationBlock = self.validation else { return .success(()) }
+            return validationBlock((request: request, response: response, data: data, fileURL: nil))
+        })
+        
         return sendAlamofireRequest(alamoRequest, target: target, callbackQueue: callbackQueue, progress: progress, completion: completion)
     }
 
@@ -212,8 +220,12 @@ private extension MoyaProvider {
             return downloadRequest
         }
 
-        let validationCodes = target.validationType.statusCodes
-        let alamoRequest = validationCodes.isEmpty ? downloadRequest : downloadRequest.validate(statusCode: validationCodes)
+        let isValidationEmpty = self.validation == nil
+        let alamoRequest = isValidationEmpty ? downloadRequest : downloadRequest.validate({ [weak self] request, response, fileURL in
+            guard let self = self, let validationBlock = self.validation else { return .success(()) }
+            return validationBlock((request: request, response: response, data: nil, fileURL: fileURL))
+        })
+        
         return sendAlamofireRequest(alamoRequest, target: target, callbackQueue: callbackQueue, progress: progress, completion: completion)
     }
 
@@ -226,8 +238,12 @@ private extension MoyaProvider {
             return initialRequest
         }
 
-        let validationCodes = target.validationType.statusCodes
-        let alamoRequest = validationCodes.isEmpty ? initialRequest : initialRequest.validate(statusCode: validationCodes)
+        let isValidationEmpty = self.validation == nil
+        let alamoRequest = isValidationEmpty ? initialRequest : initialRequest.validate({ [weak self] request, response, data in
+            guard let self = self, let validationBlock = self.validation else { return .success(()) }
+            return validationBlock((request: request, response: response, data: data, fileURL: nil))
+        })
+        
         return sendAlamofireRequest(alamoRequest, target: target, callbackQueue: callbackQueue, progress: progress, completion: completion)
     }
 

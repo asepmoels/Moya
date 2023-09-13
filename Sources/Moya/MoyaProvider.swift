@@ -1,7 +1,12 @@
 import Foundation
+import Alamofire
 
 /// Closure to be executed when a request has completed.
 public typealias Completion = (_ result: Result<Moya.Response, MoyaError>) -> Void
+
+/// Closure to be executed when a request has completed.
+public typealias MoyaValidation = ((request: URLRequest?, response: HTTPURLResponse, data: Data?, fileURL: URL?)) -> MoyaValidationResult
+public typealias MoyaValidationResult = Alamofire.Request.ValidationResult
 
 /// Closure to be executed when progress changes.
 public typealias ProgressBlock = (_ progress: ProgressResponse) -> Void
@@ -74,6 +79,8 @@ open class MoyaProvider<Target: TargetType>: MoyaProviderType {
     public let stubClosure: StubClosure
 
     public let session: Session
+    
+    var validation: MoyaValidation?
 
     /// A list of plugins.
     /// e.g. for logging, network activity indicator or credentials.
@@ -98,6 +105,7 @@ open class MoyaProvider<Target: TargetType>: MoyaProviderType {
                 callbackQueue: DispatchQueue? = nil,
                 session: Session = MoyaProvider<Target>.defaultAlamofireSession(),
                 plugins: [PluginType] = [],
+                validation: MoyaValidation? = nil,
                 trackInflights: Bool = false) {
 
         self.endpointClosure = endpointClosure
@@ -107,6 +115,7 @@ open class MoyaProvider<Target: TargetType>: MoyaProviderType {
         self.plugins = plugins
         self.trackInflights = trackInflights
         self.callbackQueue = callbackQueue
+        self.validation = validation
     }
 
     /// Returns an `Endpoint` based on the token, method, and parameters by invoking the `endpointClosure`.
